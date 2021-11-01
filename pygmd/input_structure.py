@@ -7,8 +7,6 @@ import pandas as pd
 from collections import defaultdict
 from pymatgen.core import Structure
 
-abspath = "/home/jgp505/Database/01_input"
-
 def load_structure(path):
     '''
     The structure file that exists in the PATH is read and return
@@ -16,7 +14,6 @@ def load_structure(path):
     
     Args :
         path(str) : OS.PATH
-        sformat(bool) : If True, the path including the structure file is given.
     '''
     struclist=[] ; spath=[]
     if type(path) == str :
@@ -112,7 +109,56 @@ class GMDStructure :
             else :
                 molecule[k]=len(v)
         return molecule
-        
+    def formula_dict(self) :
+        sn = self.structure.composition.get_el_amt_dict()
+        sn_dict = dict()
+        if 'C' in sn and 'H' in sn and 'N' in sn : 
+            mole=self._split_molecule()
+            for k,v in mole.items() :
+                if k == 'FA' :
+                    sn['C']-=v
+                    sn['H']-=v*5
+                    sn['N']-=v*2
+                elif k == 'MA' :
+                    sn['C']-=v
+                    sn['N']-=v
+                    sn['H']-=v*6
+                elif k == 'GUA' :
+                    sn['C']-=v
+                    sn['N']-=v*3
+                    sn['H']-=v*6
+                elif k == 'DMA' :
+                    sn['C']-=v*2
+                    sn['N']-=v
+                    sn['H']-=v*8
+                elif k == 'triMA' :
+                    sn['C']-=v*3
+                    sn['N']-=v
+                    sn['H']-=v*10
+                elif k == 'tetraMA':
+                    sn['C']-=v*4
+                    sn['N']-=v
+                    sn['H']-=v*12
+                elif k == 'Zolium' :
+                    sn['C']-=v*3
+                    sn['N']-=v*2
+                    sn['H']-=v*5
+                sn_dict[k]=v
+            if sn['C'] == 0 :
+                del sn['C']
+            else :
+                sn_dict['C'] = sn['C']
+            if sn['H'] == 0 :
+                del sn['H']
+            else :
+                sn_dict['H'] = sn['H']
+            if sn['N'] == 0 :
+                del sn['N']
+            else :
+                sn_dict['N'] = sn['N']
+        for k,v in sn.items():
+            sn_dict[k]=v
+        return sn_dict
     def formula(self, reduced=True):
         if reduced :
             sn = self.structure.composition.to_reduced_dict
